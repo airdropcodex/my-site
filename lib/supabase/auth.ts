@@ -20,10 +20,8 @@ export class AuthService {
 
   // Get the correct redirect URL based on environment
   private getRedirectUrl() {
-    if (process.env.NODE_ENV === "production") {
-      return "https://v0-e-commerce-electronics-website.vercel.app/auth/callback"
-    }
-    return `${window.location.origin}/auth/callback`
+    // Always use the production URL for consistency
+    return "https://md-electronics.vercel.app/auth/callback"
   }
 
   // Email/Password Sign Up

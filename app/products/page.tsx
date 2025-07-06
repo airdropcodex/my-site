@@ -1,11 +1,15 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import Header from "../components/Header"
 import ProductCard from "../components/ProductCard"
 import Footer from "../components/Footer"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Filter, Grid, List, Search } from "lucide-react"
 
 interface Product {
@@ -137,15 +141,23 @@ const filterOptions = [
 ]
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState("all")
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
   const supabase = createClient()
 
   useEffect(() => {
     fetchProducts()
   }, [activeFilter])
+
+  useEffect(() => {
+    const search = searchParams.get("search")
+    if (search) {
+      setSearchQuery(search)
+    }
+  }, [searchParams])
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -203,7 +215,17 @@ export default function ProductsPage() {
     }
   }
 
-  const filteredProducts = products.filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.features &&
+        product.features.some((feature) => feature.toLowerCase().includes(searchQuery.toLowerCase()))),
+  )
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    // Search is handled by the filteredProducts computation above
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -232,14 +254,16 @@ export default function ProductsPage() {
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
               {/* Search */}
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
+                <form onSubmit={handleSearch}>
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </form>
               </div>
 
               {/* Filters */}
@@ -276,7 +300,10 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            <div className="mt-4 text-neutral-600">Showing {filteredProducts.length} products</div>
+            <div className="mt-4 text-neutral-600">
+              Showing {filteredProducts.length} products
+              {searchQuery && ` for "${searchQuery}"`}
+            </div>
           </div>
         </section>
 
@@ -286,8 +313,8 @@ export default function ProductsPage() {
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-6 animate-pulse h-[600px]">
-                    <div className="aspect-square bg-neutral-200 rounded-xl mb-4"></div>
+                  <div key={i} className="bg-white rounded-2xl p-6 animate-pulse h-[450px]">
+                    <div className="aspect-[4/3] bg-neutral-200 rounded-xl mb-4"></div>
                     <div className="space-y-2">
                       <div className="h-4 bg-neutral-200 rounded w-3/4"></div>
                       <div className="h-4 bg-neutral-200 rounded w-1/2"></div>
@@ -314,7 +341,9 @@ export default function ProductsPage() {
 
             {!loading && filteredProducts.length === 0 && (
               <div className="text-center py-16">
-                <p className="text-xl text-neutral-600">No products found matching your criteria.</p>
+                <p className="text-xl text-neutral-600">
+                  {searchQuery ? `No products found for "${searchQuery}"` : "No products found matching your criteria."}
+                </p>
               </div>
             )}
           </div>

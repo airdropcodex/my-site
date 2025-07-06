@@ -14,15 +14,11 @@ export async function GET(request: NextRequest) {
       await supabase.auth.exchangeCodeForSession(code)
     } catch (error) {
       console.error("Error exchanging code for session:", error)
-      // Redirect to error page or login with error message
-      return NextResponse.redirect(`${requestUrl.origin}/auth/sign-in?error=auth_callback_error`)
+      // Redirect to sign-in page with error
+      return NextResponse.redirect(new URL("/auth/sign-in?error=auth_error", requestUrl.origin))
     }
   }
 
-  // URL to redirect to after sign in process completes
-  // Use production URL if available, otherwise fall back to request origin
-  const redirectUrl =
-    process.env.NODE_ENV === "production" ? "https://v0-e-commerce-electronics-website.vercel.app/" : requestUrl.origin
-
-  return NextResponse.redirect(redirectUrl)
+  // Redirect to home page after successful authentication
+  return NextResponse.redirect(new URL("/", requestUrl.origin))
 }

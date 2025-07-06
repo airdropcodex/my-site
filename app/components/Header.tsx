@@ -1,11 +1,14 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ShoppingCart, Search, Menu, X, User, Heart, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +21,7 @@ import { useAuth } from "@/components/AuthProvider"
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const { user, profile, signOut } = useAuth()
   const router = useRouter()
 
@@ -30,8 +34,19 @@ export default function Header() {
   }, [])
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push("/")
+    try {
+      await signOut()
+      router.push("/")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+    }
   }
 
   const isAdmin = profile?.role === "admin" || profile?.role === "super_admin"
@@ -61,10 +76,9 @@ export default function Header() {
           <nav className="hidden lg:flex items-center space-x-1">
             {[
               { name: "Home", href: "/" },
-              { name: "Categories", href: "/categories" },
-              { name: "Featured", href: "/featured" },
               { name: "Products", href: "/products" },
-              { name: "Support", href: "/support" },
+              { name: "About", href: "/about" },
+              { name: "Contact", href: "/contact" },
             ].map((item) => (
               <Link
                 key={item.name}
@@ -79,14 +93,16 @@ export default function Header() {
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-            <div className="relative w-full group">
+            <form onSubmit={handleSearch} className="relative w-full group">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400 group-focus-within:text-indigo-600 transition-colors duration-200" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search premium electronics..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 bg-white/50 border border-neutral-200/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 focus:bg-white transition-all duration-300 placeholder:text-neutral-500"
               />
-            </div>
+            </form>
           </div>
 
           {/* Actions */}
@@ -192,7 +208,19 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl border-b border-neutral-200/50 shadow-xl">
             <nav className="px-6 py-8 space-y-6">
-              {["Home", "Categories", "Featured", "Products", "Support"].map((item) => (
+              {/* Mobile Search */}
+              <form onSubmit={handleSearch} className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-xl"
+                />
+              </form>
+
+              {["Home", "Products", "About", "Contact"].map((item) => (
                 <Link
                   key={item}
                   href={`/${item.toLowerCase()}`}

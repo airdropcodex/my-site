@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Star, Heart, ShoppingCart, Truck, Shield, RotateCcw, Zap, ArrowLeft, Plus, Minus, Share2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
+import Header from "../../components/Header"
+import Footer from "../../components/Footer"
 
 interface Product {
   id: number | string
@@ -28,6 +30,7 @@ interface Product {
   specifications?: Record<string, string>
   in_stock?: boolean
   stock_quantity?: number
+  is_active?: boolean
 }
 
 // Fallback product data
@@ -73,13 +76,36 @@ export default function ProductDetails() {
     async function fetchProduct() {
       try {
         const supabase = createClient()
-        const { data, error } = await supabase.from("products").select("*").eq("id", productId).single()
+
+        // Check if Supabase is configured
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+        if (!supabaseUrl || !supabaseKey) {
+          console.warn("Supabase not configured – using fallback product data")
+          setProduct(getFallbackProduct(productId))
+          setLoading(false)
+          return
+        }
+
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("id", productId)
+          .eq("is_active", true)
+          .single()
 
         if (error || !data) {
-          console.warn("Product not found in database, using fallback data")
+          console.warn("Product not found in database, using fallback data:", error?.message)
           setProduct(getFallbackProduct(productId))
         } else {
-          setProduct(data)
+          // Map database fields to component expected format
+          const mappedProduct: Product = {
+            ...data,
+            isOnSale: !!data.original_price,
+            in_stock: data.stock_quantity > 0,
+          }
+          setProduct(mappedProduct)
         }
       } catch (error) {
         console.error("Error fetching product:", error)
@@ -114,10 +140,13 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product details...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading product details...</p>
+          </div>
         </div>
       </div>
     )
@@ -125,12 +154,15 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
-          <Link href="/products">
-            <Button>Back to Products</Button>
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+            <Link href="/products">
+              <Button>Back to Products</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -138,8 +170,10 @@ export default function ProductDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
+      <Header />
+
+      {/* Breadcrumb */}
+      <div className="bg-white shadow-sm mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link href="/products" className="inline-flex items-center text-indigo-600 hover:text-indigo-700">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -197,7 +231,7 @@ export default function ProductDetails() {
                 </Badge>
               )}
               <Badge variant="outline" className="text-indigo-600 border-indigo-600">
-                {product.category}
+                {product.category || "Electronics"}
               </Badge>
             </div>
 
@@ -255,33 +289,35 @@ export default function ProductDetails() {
             <div className="flex items-center space-x-2">
               <div className={`w-3 h-3 rounded-full ${product.in_stock ? "bg-green-500" : "bg-red-500"}`}></div>
               <span className={`font-medium ${product.in_stock ? "text-green-700" : "text-red-700"}`}>
-                {product.in_stock ? `In Stock (${product.stock_quantity} available)` : "Out of Stock"}
+                {product.in_stock ? `In Stock (${product.stock_quantity || 0} available)` : "Out of Stock"}
               </span>
             </div>
 
             {/* Quantity Selector */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Quantity</label>
-              <div className="flex items-center space-x-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
-                  disabled={quantity >= (product.stock_quantity || 10)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+            {product.in_stock && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Quantity</label>
+                <div className="flex items-center space-x-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setQuantity(quantity + 1)}
+                    disabled={quantity >= (product.stock_quantity || 10)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="space-y-3">
@@ -439,6 +475,7 @@ export default function ProductDetails() {
           </Tabs>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
