@@ -172,20 +172,6 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
-                    <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={emailForm.dateOfBirth}
-                      onChange={(e) => setEmailForm((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
                   <Label htmlFor="address">Address</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
@@ -262,20 +248,6 @@ export default function SignUpPage() {
                           placeholder="Enter your full name"
                           className="pl-10"
                           required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="phoneDateOfBirth">Date of Birth</Label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-400" />
-                        <Input
-                          id="phoneDateOfBirth"
-                          type="date"
-                          value={phoneForm.dateOfBirth}
-                          onChange={(e) => setPhoneForm((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
-                          className="pl-10"
                         />
                       </div>
                     </div>
