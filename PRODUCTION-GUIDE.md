@@ -16,19 +16,19 @@
 1. Register a new account through your app at `/auth/sign-up`
 2. After registration, go to Supabase SQL Editor
 3. Run this query (replace with your actual email):
-   ```sql
+   \`\`\`sql
    UPDATE profiles SET role = 'admin' WHERE email = 'your-admin-email@domain.com';
-   ```
+   \`\`\`
 
 ## Step 2: Environment Configuration
 
 ### 2.1 Production Environment Variables
 Create a `.env.production` file:
-```env
+\`\`\`env
 NEXT_PUBLIC_SUPABASE_URL=https://byvzbhwfwpapkxobyizy.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5dnpiaHdmd3BhcGt4b2J5aXp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3NzQxMzksImV4cCI6MjA2NzM1MDEzOX0.0km5rwznsGS5ad7BF5bqvTZXfqJldmZ7POzmWTOGQro
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
-```
+\`\`\`
 
 ## Step 3: Deployment Options
 

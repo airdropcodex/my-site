@@ -84,11 +84,11 @@
 ## 🔧 **Technical Implementation**
 
 ### **New Dependencies Added:**
-```bash
+\`\`\`bash
 framer-motion react-intersection-observer react-hot-toast 
 react-dropzone @tanstack/react-table recharts 
 react-image-gallery swiper
-```
+\`\`\`
 
 ### **Components Created:**
 1. **`animated-counter.tsx`** - Animated number counters
