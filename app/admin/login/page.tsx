@@ -2,13 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 // Hardcoded admin credentials
@@ -25,8 +25,20 @@ export default function AdminLogin() {
     password: "",
   })
   const [error, setError] = useState("")
+  const [mounted, setMounted] = useState(false)
 
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+    // Check if already logged in
+    if (typeof window !== "undefined") {
+      const adminSession = localStorage.getItem("admin_session")
+      if (adminSession === "true") {
+        router.push("/admin")
+      }
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,8 +49,10 @@ export default function AdminLogin() {
       // Check against hardcoded credentials
       if (formData.email === ADMIN_CREDENTIALS.email && formData.password === ADMIN_CREDENTIALS.password) {
         // Set admin session in localStorage
-        localStorage.setItem("admin_session", "true")
-        localStorage.setItem("admin_email", formData.email)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("admin_session", "true")
+          localStorage.setItem("admin_email", formData.email)
+        }
         toast.success("Successfully signed in as admin!")
         router.push("/admin")
       } else {
@@ -46,9 +60,21 @@ export default function AdminLogin() {
       }
     } catch (error: any) {
       setError(error.message)
+      toast.error("Login failed. Please check your credentials.")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -79,6 +105,7 @@ export default function AdminLogin() {
                   placeholder="admin@electrostore.com"
                   className="pl-10"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -95,6 +122,7 @@ export default function AdminLogin() {
                   placeholder="Enter admin password"
                   className="pl-10 pr-10"
                   required
+                  disabled={isLoading}
                 />
                 <Button
                   type="button"
@@ -102,6 +130,7 @@ export default function AdminLogin() {
                   size="icon"
                   className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
                   onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
@@ -113,7 +142,14 @@ export default function AdminLogin() {
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 py-3"
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </Button>
 
             <div className="text-center">

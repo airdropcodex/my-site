@@ -18,12 +18,21 @@ export interface SignInData {
 export class AuthService {
   private supabase = createClient()
 
+  // Get the correct redirect URL based on environment
+  private getRedirectUrl() {
+    if (process.env.NODE_ENV === "production") {
+      return "https://v0-e-commerce-electronics-website.vercel.app/auth/callback"
+    }
+    return `${window.location.origin}/auth/callback`
+  }
+
   // Email/Password Sign Up
   async signUpWithEmail(data: SignUpData) {
     const { data: authData, error } = await this.supabase.auth.signUp({
       email: data.email!,
       password: data.password!,
       options: {
+        emailRedirectTo: this.getRedirectUrl(),
         data: {
           full_name: data.fullName,
           date_of_birth: data.dateOfBirth,
@@ -87,7 +96,7 @@ export class AuthService {
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: this.getRedirectUrl(),
       },
     })
 
