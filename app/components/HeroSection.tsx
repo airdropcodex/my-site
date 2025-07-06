@@ -11,15 +11,26 @@ import { FloatingShape } from "@/components/ui/floating-elements"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 
 export default function HeroSection() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const springX = useSpring(mouseX, { stiffness: 100, damping: 20 })
+  const springY = useSpring(mouseY, { stiffness: 100, damping: 20 })
+
+  const x1 = useTransform(springX, (value) => value * 0.01)
+  const y1 = useTransform(springY, (value) => value * 0.01)
+  const x2 = useTransform(springX, (value) => value * -0.005)
+  const y2 = useTransform(springY, (value) => value * -0.005)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
+      mouseX.set(e.clientX - window.innerWidth / 2)
+      mouseY.set(e.clientY - window.innerHeight / 2)
     }
+    
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+  }, [mouseX, mouseY])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-indigo-50/30">
