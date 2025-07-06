@@ -13,16 +13,21 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
+  Shield,
+  Activity
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navigation = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Categories", href: "/admin/categories", icon: FolderOpen },
+  { name: "Users", href: "/admin/users", icon: Users },
   { name: "Content", href: "/admin/content", icon: FileText },
   { name: "Media", href: "/admin/media", icon: ImageIcon },
-  { name: "Users", href: "/admin/users", icon: Users },
+  { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { name: "Security", href: "/admin/security", icon: Shield },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
@@ -65,7 +70,7 @@ export default function AdminSidebar() {
         <nav className="flex-1 p-4 space-y-2">
           {navigation.map((item) => {
             const IconComponent = item.icon
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href || (item.href === '/admin/dashboard' && pathname === '/admin')
             return (
               <Link
                 key={item.name}
@@ -84,6 +89,20 @@ export default function AdminSidebar() {
             )
           })}
         </nav>
+
+        {/* Footer */}
+        {!collapsed && (
+          <div className="p-4 border-t border-neutral-200">
+            <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+              <Activity className="h-5 w-5 text-indigo-600" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-neutral-900">System Status</p>
+                <p className="text-xs text-neutral-600">All systems operational</p>
+              </div>
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
