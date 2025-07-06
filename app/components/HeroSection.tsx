@@ -1,9 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Play, Truck, Headphones, Shield, Users, Star, Sparkles } from "lucide-react"
+import { MagneticButton } from "@/components/ui/magnetic-button"
+import { RevealAnimation, StaggerContainer } from "@/components/ui/reveal-animation"
+import { FloatingShape } from "@/components/ui/floating-elements"
+import { AnimatedCounter } from "@/components/ui/animated-counter"
 
 export default function HeroSection() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
