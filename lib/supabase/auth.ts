@@ -20,8 +20,12 @@ export class AuthService {
 
   // Get the correct redirect URL based on environment
   private getRedirectUrl() {
-    // Always use the production URL for consistency
-    return "https://md-electronics.vercel.app/auth/callback"
+    // Use current origin for redirect URL
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/auth/callback`
+    }
+    // Fallback for server-side
+    return "http://localhost:3000/auth/callback"
   }
 
   // Email/Password Sign Up
