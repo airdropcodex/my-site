@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -28,7 +28,16 @@ const navigation = [
 
 export default function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
 
   return (
     <div

@@ -1,15 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Bell, Search, User, LogOut } from "lucide-react"
 
 export default function AdminHeader() {
   const [isLoading, setIsLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSignOut = async () => {
     setIsLoading(true)
@@ -18,6 +21,10 @@ export default function AdminHeader() {
     localStorage.removeItem("admin_email")
     router.push("/admin/login")
     setIsLoading(false)
+  }
+
+  if (!mounted) {
+    return null
   }
 
   return (

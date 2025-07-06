@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mail, Lock, Eye, EyeOff, Shield } from "lucide-react"
-import { authService } from "@/lib/supabase/auth"
 import { toast } from "sonner"
 
 export default function AdminLoginPage() {
@@ -26,30 +25,31 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    
+    // Check if already logged in
+    const adminSession = localStorage.getItem("admin_session")
+    if (adminSession === "true") {
+      router.push("/admin")
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      const { user } = await authService.signInWithEmail(formData)
-
-      if (user) {
-        // Check if user is admin
-        const isAdmin = await authService.isAdmin(user.id)
-
-        if (isAdmin) {
-          toast.success("Successfully signed in as admin!")
-          router.push("/admin")
-        } else {
-          toast.error("Access denied. Admin privileges required.")
-          await authService.signOut()
-        }
+      // Simple demo authentication - replace with real auth
+      if (formData.email === "admin@electrostore.com" && formData.password === "admin123") {
+        localStorage.setItem("admin_session", "true")
+        localStorage.setItem("admin_email", formData.email)
+        toast.success("Successfully signed in as admin!")
+        router.push("/admin")
+      } else {
+        toast.error("Invalid credentials. Use admin@electrostore.com / admin123")
       }
     } catch (error: any) {
       console.error("Admin login error:", error)
-      toast.error(error.message || "Failed to sign in")
+      toast.error("Failed to sign in")
     } finally {
       setIsLoading(false)
     }
@@ -80,6 +80,11 @@ export default function AdminLoginPage() {
           </div>
           <CardTitle className="text-2xl font-bold text-neutral-900">Admin Login</CardTitle>
           <p className="text-neutral-600">Sign in to access the admin panel</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+            <p className="text-blue-800 font-medium">Demo Credentials:</p>
+            <p className="text-blue-700">Email: admin@electrostore.com</p>
+            <p className="text-blue-700">Password: admin123</p>
+          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
