@@ -1,0 +1,147 @@
+import { createClient } from "./client"
+
+export interface SignUpData {
+  email?: string
+  password?: string
+  phone?: string
+  fullName?: string
+  dateOfBirth?: string
+  address?: string
+}
+
+export interface SignInData {
+  email?: string
+  password?: string
+  phone?: string
+}
+
+export class AuthService {
+  private supabase = createClient()
+
+  // Email/Password Sign Up
+  async signUpWithEmail(data: SignUpData) {
+    const { data: authData, error } = await this.supabase.auth.signUp({
+      email: data.email!,
+      password: data.password!,
+      options: {
+        data: {
+          full_name: data.fullName,
+          date_of_birth: data.dateOfBirth,
+          address: data.address,
+        },
+      },
+    })
+
+    if (error) throw error
+    return authData
+  }
+
+  // Email/Password Sign In
+  async signInWithEmail(data: SignInData) {
+    const { data: authData, error } = await this.supabase.auth.signInWithPassword({
+      email: data.email!,
+      password: data.password!,
+    })
+
+    if (error) throw error
+    return authData
+  }
+
+  // Phone OTP Sign Up
+  async signUpWithPhone(phone: string) {
+    const { data, error } = await this.supabase.auth.signInWithOtp({
+      phone: phone,
+      options: {
+        shouldCreateUser: true,
+      },
+    })
+
+    if (error) throw error
+    return data
+  }
+
+  // Phone OTP Sign In
+  async signInWithPhone(phone: string) {
+    const { data, error } = await this.supabase.auth.signInWithOtp({
+      phone: phone,
+    })
+
+    if (error) throw error
+    return data
+  }
+
+  // Verify OTP
+  async verifyOTP(phone: string, token: string) {
+    const { data, error } = await this.supabase.auth.verifyOtp({
+      phone: phone,
+      token: token,
+      type: "sms",
+    })
+
+    if (error) throw error
+    return data
+  }
+
+  // Google Sign In
+  async signInWithGoogle() {
+    const { data, error } = await this.supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) throw error
+    return data
+  }
+
+  // Sign Out
+  async signOut() {
+    const { error } = await this.supabase.auth.signOut()
+    if (error) throw error
+  }
+
+  // Get Current User
+  async getCurrentUser() {
+    const {
+      data: { user },
+      error,
+    } = await this.supabase.auth.getUser()
+    if (error) throw error
+    return user
+  }
+
+  // Get User Profile
+  async getUserProfile(userId: string) {
+    const { data, error } = await this.supabase.from("profiles").select("*").eq("id", userId).single()
+
+    if (error) throw error
+    return data
+  }
+
+  // Update User Profile
+  async updateUserProfile(userId: string, updates: Partial<SignUpData>) {
+    const { data, error } = await this.supabase
+      .from("profiles")
+      .update({
+        full_name: updates.fullName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+
+  // Check if user is admin
+  async isAdmin(userId: string): Promise<boolean> {
+    const { data, error } = await this.supabase.from("profiles").select("role").eq("id", userId).single()
+
+    if (error) return false
+    return data?.role === "admin" || data?.role === "super_admin"
+  }
+}
+
+export const authService = new AuthService()
