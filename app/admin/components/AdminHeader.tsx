@@ -2,25 +2,42 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { authService } from "@/lib/supabase/auth"
 import { Button } from "@/components/ui/button"
 import { Bell, Search, User, LogOut } from "lucide-react"
 
 export default function AdminHeader() {
   const [isLoading, setIsLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
+    getCurrentUser()
   }, [])
+
+  const getCurrentUser = async () => {
+    try {
+      const user = await authService.getCurrentUser()
+      if (user) {
+        setUserEmail(user.email)
+      }
+    } catch (error) {
+      console.error("Error getting current user:", error)
+    }
+  }
 
   const handleSignOut = async () => {
     setIsLoading(true)
-    // Clear admin session from localStorage
-    localStorage.removeItem("admin_session")
-    localStorage.removeItem("admin_email")
-    router.push("/admin/login")
-    setIsLoading(false)
+    try {
+      await authService.signOut()
+      router.push("/admin/login")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!mounted) {
@@ -52,6 +69,11 @@ export default function AdminHeader() {
           </Button>
 
           <div className="flex items-center space-x-2">
+            {userEmail && (
+              <span className="text-sm text-neutral-600 hidden md:block">
+                {userEmail}
+              </span>
+            )}
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>
