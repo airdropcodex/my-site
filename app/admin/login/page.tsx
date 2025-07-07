@@ -37,7 +37,8 @@ export default function AdminLoginPage() {
       if (user) {
         const isAdmin = await authService.isAdmin(user.id)
         if (isAdmin) {
-          router.push("/admin")
+          router.replace("/admin")
+          router.refresh()
         }
       }
     } catch (error) {
@@ -59,7 +60,11 @@ export default function AdminLoginPage() {
 
         if (isAdmin) {
           toast.success("Successfully signed in as admin!")
-          router.push("/admin")
+          
+          // Use replace instead of push to prevent back navigation to login
+          // and refresh to ensure session is properly synchronized
+          router.replace("/admin")
+          router.refresh()
         } else {
           toast.error("Access denied. Admin privileges required.")
           await authService.signOut()
