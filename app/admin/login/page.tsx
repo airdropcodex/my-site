@@ -35,14 +35,16 @@ export default function AdminLoginPage() {
     try {
       const user = await authService.getCurrentUser()
       if (user) {
+        console.log("Current user:", user.email)
         const isAdmin = await authService.isAdmin(user.id)
+        console.log("Is admin:", isAdmin)
         if (isAdmin) {
-          router.replace("/admin")
-          router.refresh()
+          console.log("Redirecting to admin dashboard...")
+          router.replace("/admin/dashboard")
         }
       }
     } catch (error) {
-      // User not logged in, stay on login page
+      console.log("No existing auth session")
     }
   }
 
@@ -51,22 +53,30 @@ export default function AdminLoginPage() {
     setIsLoading(true)
 
     try {
+      console.log("Attempting login with:", formData.email)
+      
       // Sign in with Supabase
       const { user } = await authService.signInWithEmail(formData)
+      console.log("Login successful, user:", user?.email)
 
       if (user) {
         // Check if user has admin role
+        console.log("Checking admin role for user:", user.id)
         const isAdmin = await authService.isAdmin(user.id)
+        console.log("Admin check result:", isAdmin)
 
         if (isAdmin) {
           toast.success("Successfully signed in as admin!")
+          console.log("Redirecting to admin dashboard...")
           
-          // Use replace instead of push to prevent back navigation to login
-          // and refresh to ensure session is properly synchronized
-          router.replace("/admin")
-          router.refresh()
+          // Wait a moment for the session to be fully established
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          // Navigate to dashboard
+          window.location.href = "/admin/dashboard"
         } else {
           toast.error("Access denied. Admin privileges required.")
+          console.log("User does not have admin privileges")
           await authService.signOut()
         }
       }

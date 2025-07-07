@@ -146,12 +146,49 @@ export class AuthService {
     return data
   }
 
-  // Check if user is admin
+  // Check if user is admin - Enhanced with better error handling
   async isAdmin(userId: string): Promise<boolean> {
-    const { data, error } = await this.supabase.from("profiles").select("role").eq("id", userId).single()
+    try {
+      console.log("Checking admin status for user:", userId)
+      
+      const { data, error } = await this.supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single()
 
-    if (error) return false
-    return data?.role === "admin" || data?.role === "super_admin"
+      if (error) {
+        console.error("Error checking admin status:", error)
+        return false
+      }
+
+      console.log("User profile data:", data)
+      const isAdmin = data?.role === "admin" || data?.role === "super_admin"
+      console.log("Is admin result:", isAdmin)
+      
+      return isAdmin
+    } catch (error) {
+      console.error("Exception in isAdmin check:", error)
+      return false
+    }
+  }
+
+  // Create admin user (for testing)
+  async createAdminUser(email: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from("profiles")
+        .update({ role: "admin" })
+        .eq("email", email)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error("Error creating admin user:", error)
+      throw error
+    }
   }
 }
 
