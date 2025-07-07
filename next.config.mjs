@@ -9,6 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    // Disable strict mode to prevent the invariant error
+    reactStrictMode: false,
+  },
 }
 
 export default nextConfig

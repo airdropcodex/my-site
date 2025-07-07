@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
     
     // Check if already logged in as admin
     checkExistingAuth()
-  }, [router])
+  }, [])
 
   const checkExistingAuth = async () => {
     try {
@@ -69,11 +69,8 @@ export default function AdminLoginPage() {
           toast.success("Successfully signed in as admin!")
           console.log("Redirecting to admin dashboard...")
           
-          // Wait a moment for the session to be fully established
-          await new Promise(resolve => setTimeout(resolve, 500))
-          
-          // Navigate to dashboard
-          window.location.href = "/admin/dashboard"
+          // Use router.replace for better navigation
+          router.replace("/admin/dashboard")
         } else {
           toast.error("Access denied. Admin privileges required.")
           console.log("User does not have admin privileges")
@@ -114,8 +111,9 @@ export default function AdminLoginPage() {
           <CardTitle className="text-2xl font-bold text-neutral-900">Admin Login</CardTitle>
           <p className="text-neutral-600">Sign in to access the admin panel</p>
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
-            <p className="text-amber-800 font-medium">Admin Access Required</p>
-            <p className="text-amber-700">Only users with admin role can access this panel.</p>
+            <p className="text-amber-800 font-medium">Test Admin Credentials:</p>
+            <p className="text-amber-700">Email: admin@electrostore.com</p>
+            <p className="text-amber-700">Password: admin123456</p>
             <p className="text-amber-700 mt-1">
               Don't have admin access? 
               <Link href="/auth/sign-in" className="text-indigo-600 hover:text-indigo-700 font-medium ml-1">
